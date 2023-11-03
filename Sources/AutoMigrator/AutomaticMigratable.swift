@@ -24,7 +24,6 @@ struct TableField: AutomaticMigratable {
     let dataType: DatabaseSchema.DataType
     let isRequired: Bool
     
-    var removeMigration: String { "" }
     var fieldName: String { name }
     
     var addMigration: String {
