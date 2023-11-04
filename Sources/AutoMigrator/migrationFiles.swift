@@ -27,7 +27,7 @@ extension AutoMigrator {
     
     func migrationFile(name: String, batch: Int, tableName: String, upgrade: String, downgrade: String) -> String {
         
-        let methodName = name.replacingOccurrences(of: "+", with: "_")
+        let methodName = genMethodName(name: name)
         return
     """
     // MARK: - \(name)-batch-\(batch)
@@ -51,7 +51,7 @@ extension AutoMigrator {
 
     func migrationFile(name: String, upgrade: String, downgrade: String) -> String {
         
-        let methodName = name.replacingOccurrences(of: "+", with: "_")
+        let methodName = genMethodName(name: name)
         
         return
     """
@@ -68,6 +68,10 @@ extension AutoMigrator {
     // MARK: - \(name)-END
     
     """
+    }
+    
+    func genMethodName(name: String) -> String  {
+        return name.replacingOccurrences(of: "+", with: "_")
     }
     
     func migrationFiles(from currentState: [String: [ColumnInformation]], newTables: [Table]) throws -> MigrationFiles {
@@ -129,13 +133,15 @@ extension AutoMigrator {
         var versionDowngrade = ""
 
         for file in migrationFiles {
+            let methodName = genMethodName(name: file.key)
+            
             versionUpgrade += """
 
-                try await \(file.key)().prepare(on: database)
+                try await \(methodName)().prepare(on: database)
         """
             versionDowngrade += """
 
-                try await \(file.key)().revert(on: database)
+                try await \(methodName)().revert(on: database)
         """
         }
 
