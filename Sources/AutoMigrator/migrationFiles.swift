@@ -26,13 +26,16 @@ extension AutoMigrator {
     }
     
     func migrationFile(name: String, batch: Int, tableName: String, upgrade: String, downgrade: String) -> String {
+        
+        let methodName = name.replacingOccurrences(of: "+", with: "_")
+        return
     """
     // MARK: - \(name)-batch-\(batch)
     extension MigrationBatch\(batch) {
-        struct \(name) {}
+        struct \(methodName) {}
     }
 
-    extension MigrationBatch\(batch).\(name): AsyncMigration {
+    extension MigrationBatch\(batch).\(methodName): AsyncMigration {
         func prepare(on database: Database) async throws {
             try await database.schema("\(tableName)")\(upgrade)
         }
@@ -47,9 +50,13 @@ extension AutoMigrator {
     }
 
     func migrationFile(name: String, upgrade: String, downgrade: String) -> String {
+        
+        let methodName = name.replacingOccurrences(of: "+", with: "_")
+        
+        return
     """
     // MARK: - \(name)
-    struct \(name): AsyncMigration {
+    struct \(methodName): AsyncMigration {
         func prepare(on database: Database) async throws {
             \(upgrade)
         }
