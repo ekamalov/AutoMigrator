@@ -41,7 +41,7 @@ extension FieldProperty: AutomaticMigratable {
     public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
         if let fieldConfig = fieldConfig {
             if let sql = fieldConfig.sql {
-                return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .required, .sql(\(sql) )"
+                return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .required, .sql(\(sql)))"
             }
         }
         return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .required)"
@@ -54,7 +54,7 @@ extension OptionalFieldProperty: AutomaticMigratable {
     public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
         if let fieldConfig = fieldConfig {
             if let sql = fieldConfig.sql {
-                return ".field(\"\(fieldName)\", .\(dataType(from: WrappedValue.self)), .sql(\(sql))"
+                return ".field(\"\(fieldName)\", .\(dataType(from: WrappedValue.self)), .sql(\(sql)))"
             }
         }
         return ".field(\"\(fieldName)\", .\(dataType(from: WrappedValue.self)))"
@@ -67,7 +67,7 @@ extension IDProperty: AutomaticMigratable {
     public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
         if let fieldConfig = fieldConfig {
             if let sql = fieldConfig.sql {
-                return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .identifier(auto: false), .sql(\(sql))"
+                return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .identifier(auto: false), .sql(\(sql)))"
             }
         }
         return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .identifier(auto: false))"
@@ -80,7 +80,7 @@ extension TimestampProperty: AutomaticMigratable {
     public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
         if let fieldConfig = fieldConfig {
             if let sql = fieldConfig.sql {
-                return ".field(\"\(fieldName)\", .datetime, .sql(\(sql))"
+                return ".field(\"\(fieldName)\", .datetime, .sql(\(sql)))"
             }
         }
         return ".field(\"\(fieldName)\", .datetime)"
@@ -102,7 +102,7 @@ extension ParentProperty: AutomaticMigratable {
             }
             
             if let sql = fieldConfig.sql {
-                return "\(ret), .sql(\(sql))"
+                return "\(ret), .sql(\(sql)))"
             } else {
                 return "\(ret))"
             }
@@ -127,7 +127,7 @@ extension OptionalParentProperty: AutomaticMigratable {
             }
             
             if let sql = fieldConfig.sql {
-                return "\(ret), .sql(\(sql))"
+                return "\(ret), .sql(\(sql)))"
             } else {
                 return "\(ret))"
             }
