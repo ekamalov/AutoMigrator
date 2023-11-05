@@ -48,7 +48,7 @@ extension AutoMigrator {
         }
         
         for removedField in oldState.values {
-            downgradeMigration += removedField.getAddMigration(fieldConfig: table?.config[removedField.fieldName])
+            downgradeMigration += newLine + removedField.getAddMigration(fieldConfig: table?.config[removedField.fieldName])
             upgradeMigration += newLine + removedField.removeMigration
         }
         
