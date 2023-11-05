@@ -15,24 +15,23 @@ struct MigrationFiles {
 }
 
 extension AutoMigrator {
-    var migrationFileHeader: String {
-        return """
-    import Foundation
-    import Fluent
-    
-    // Automatic generated migrations\n
-    
-    """
-    }
     
     func migrationFile(name: String, batch: Int, tableName: String, upgrade: String, downgrade: String) -> String {
+        
+        let methodName = genMethodName(name: name)
+        return
     """
-    // MARK: - \(name)-batch-\(batch)
+    import Foundation
+    import Fluent
+
+    // Automatic generated migrations for \(name)
+    // Edit if needed
+    
     extension MigrationBatch\(batch) {
-        struct \(name) {}
+        struct \(methodName) {}
     }
 
-    extension MigrationBatch\(batch).\(name): AsyncMigration {
+    extension MigrationBatch\(batch).\(methodName): AsyncMigration {
         func prepare(on database: Database) async throws {
             try await database.schema("\(tableName)")\(upgrade)
         }
@@ -41,15 +40,22 @@ extension AutoMigrator {
             try await database.schema("\(tableName)")\(downgrade)
         }
     }
-    // MARK: - \(name)-batch-\(batch)-END
-    
     """
     }
 
     func migrationFile(name: String, upgrade: String, downgrade: String) -> String {
+        
+        let methodName = genMethodName(name: name)
+        
+        return
     """
-    // MARK: - \(name)
-    struct \(name): AsyncMigration {
+    import Foundation
+    import Fluent
+
+    // Automatic generated migrations for \(name)
+    // Edit if needed
+    
+    struct \(methodName): AsyncMigration {
         func prepare(on database: Database) async throws {
             \(upgrade)
         }
@@ -63,6 +69,10 @@ extension AutoMigrator {
     """
     }
     
+    func genMethodName(name: String) -> String  {
+        return name.replacingOccurrences(of: "+", with: "_")
+    }
+    
     func migrationFiles(from currentState: [String: [ColumnInformation]], newTables: [Table]) throws -> MigrationFiles {
         var state = currentState
         var migrationFiles = [String: String]()
@@ -74,7 +84,7 @@ extension AutoMigrator {
             
             if let old = state[table.name] {
                 // change table
-                let migrations = migration(old: old.map(\.field), new: table.fields)
+                let migrations = migration(old: old.map(\.field), new: table.fields, table: table)
                 app.logger.info("Changes for \(table.name)", metadata: nil)
                 state[table.name] = nil
                 
@@ -90,7 +100,7 @@ extension AutoMigrator {
                 )
             } else {
                 // Add table
-                let migrations = migration(old: [], new: table.fields)
+                let migrations = migration(old: [], new: table.fields, table: table)
                 app.logger.info("Add \(table.name)", metadata: nil)
                 
                 migrationFiles[migrationName] = migrationFile(
@@ -122,13 +132,15 @@ extension AutoMigrator {
         var versionDowngrade = ""
 
         for file in migrationFiles {
+            let methodName = genMethodName(name: file.key)
+            
             versionUpgrade += """
 
-                try await \(file.key)().prepare(on: database)
+                try await \(methodName)().prepare(on: database)
         """
             versionDowngrade += """
 
-                try await \(file.key)().revert(on: database)
+                try await \(methodName)().revert(on: database)
         """
         }
 

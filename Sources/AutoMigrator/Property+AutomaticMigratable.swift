@@ -36,31 +36,103 @@ private func dataType(from type: String) -> DatabaseSchema.DataType {
 }
 
 extension FieldProperty: AutomaticMigratable {
-    public var addMigration: String { ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .required)" }
     public var fieldName: String { key.description }
+    
+    public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
+        if let fieldConfig = fieldConfig {
+            if let sql = fieldConfig.sql {
+                return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .required, .sql(\(sql)))"
+            }
+        }
+        return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .required)"
+    }
 }
 
 extension OptionalFieldProperty: AutomaticMigratable {
-    public var addMigration: String { ".field(\"\(fieldName)\", .\(dataType(from: WrappedValue.self)))" }
     public var fieldName: String { key.description }
+    
+    public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
+        if let fieldConfig = fieldConfig {
+            if let sql = fieldConfig.sql {
+                return ".field(\"\(fieldName)\", .\(dataType(from: WrappedValue.self)), .sql(\(sql)))"
+            }
+        }
+        return ".field(\"\(fieldName)\", .\(dataType(from: WrappedValue.self)))"
+    }
 }
 
 extension IDProperty: AutomaticMigratable {
-    public var addMigration: String { ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .identifier(auto: false))" }
     public var fieldName: String { key.description }
+    
+    public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
+        if let fieldConfig = fieldConfig {
+            if let sql = fieldConfig.sql {
+                return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .identifier(auto: false), .sql(\(sql)))"
+            }
+        }
+        return ".field(\"\(fieldName)\", .\(dataType(from: Value.self)), .identifier(auto: false))"
+    }
 }
 
 extension TimestampProperty: AutomaticMigratable {
-    public var addMigration: String { ".field(\"\(fieldName)\", .datetime)" }
     public var fieldName: String { $timestamp.key.description }
+    
+    public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
+        if let fieldConfig = fieldConfig {
+            if let sql = fieldConfig.sql {
+                return ".field(\"\(fieldName)\", .datetime, .sql(\(sql)))"
+            }
+        }
+        return ".field(\"\(fieldName)\", .datetime)"
+    }
 }
 
 extension ParentProperty: AutomaticMigratable {
-    public var addMigration: String { ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .required, .references(\"\(To.schema)\", .id, onDelete: .cascade, onUpdate: .cascade))" }
     public var fieldName: String { $id.key.description }
+    
+    public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
+        
+        if let fieldConfig = fieldConfig {
+            var ret: String
+            
+            if fieldConfig.withoutForeignKey {
+                ret = ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .required"
+            } else {
+                ret = ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .required, .references(\"\(To.schema)\", .id, onDelete: .cascade, onUpdate: .cascade)"
+            }
+            
+            if let sql = fieldConfig.sql {
+                return "\(ret), .sql(\(sql)))"
+            } else {
+                return "\(ret))"
+            }
+        }
+        
+        return ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .required, .references(\"\(To.schema)\", .id, onDelete: .cascade, onUpdate: .cascade))"
+    }
 }
 
 extension OptionalParentProperty: AutomaticMigratable {
-    public var addMigration: String { ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .references(\"\(To.schema)\", .id, onDelete: .cascade, onUpdate: .cascade))" }
     public var fieldName: String { $id.key.description }
+    
+    public func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
+        
+        if let fieldConfig = fieldConfig {
+            var ret: String
+            
+            if fieldConfig.withoutForeignKey {
+                ret = ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self))"
+            } else {
+                ret = ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .references(\"\(To.schema)\", .id, onDelete: .cascade, onUpdate: .cascade)"
+            }
+            
+            if let sql = fieldConfig.sql {
+                return "\(ret), .sql(\(sql)))"
+            } else {
+                return "\(ret))"
+            }
+        }
+        
+        return ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .references(\"\(To.schema)\", .id, onDelete: .cascade, onUpdate: .cascade))"
+    }
 }
