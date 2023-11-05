@@ -11,10 +11,10 @@ import Fluent
 public struct Table {
     public let name: String
     public let fields: [AutomaticMigratable]
-    public let fieldsWithoutForeignKey: [String] // 不使用外键的key
+    public let config: [String: TableFieldConfig] // 对某些field的独特配置
 }
 
-public func generateTable<T: Model>(_ model: T.Type, fieldsWithoutForeignKey: [String] = []) -> Table {
+public func generateTable<T: Model>(_ model: T.Type, config: [String: TableFieldConfig] = [:]) -> Table {
     
     var fields = [AutomaticMigratable]()
     
@@ -24,7 +24,7 @@ public func generateTable<T: Model>(_ model: T.Type, fieldsWithoutForeignKey: [S
         }
     }
     
-    return Table(name: model.schema, fields: fields, fieldsWithoutForeignKey: fieldsWithoutForeignKey)
+    return Table(name: model.schema, fields: fields, config: config)
 }
 
 extension AutoMigrator {
@@ -40,11 +40,7 @@ extension AutoMigrator {
         
         for field in new {
             if oldState[field.fieldName] == nil {
-                if let table = table, table.fieldsWithoutForeignKey.contains(field.fieldName) {
-                    upgradeMigration += newLine + (field.addWithoutForeignKeyaddMigration ?? field.addMigration)
-                } else {
-                    upgradeMigration += newLine + field.addMigration
-                }
+                upgradeMigration += newLine + field.getAddMigration(fieldConfig: table?.config[field.fieldName])
                 downgradeMigration += newLine + field.removeMigration
             } else {
                 oldState[field.fieldName] = nil
@@ -52,11 +48,7 @@ extension AutoMigrator {
         }
         
         for removedField in oldState.values {
-            if let table = table, table.fieldsWithoutForeignKey.contains(removedField.fieldName) {
-                downgradeMigration += newLine + (removedField.addWithoutForeignKeyaddMigration ?? removedField.addMigration)
-            } else {
-                downgradeMigration += newLine + removedField.addMigration
-            }
+            downgradeMigration += removedField.getAddMigration(fieldConfig: table?.config[removedField.fieldName])
             upgradeMigration += newLine + removedField.removeMigration
         }
         

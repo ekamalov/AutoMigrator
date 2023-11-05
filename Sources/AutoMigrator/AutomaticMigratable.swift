@@ -9,16 +9,13 @@ import Foundation
 import Fluent
 
 public protocol AutomaticMigratable {
-    var addMigration: String { get }
-    var addWithoutForeignKeyaddMigration: String? { get }
     var removeMigration: String { get }
-                
     var fieldName: String { get }
+    func getAddMigration(fieldConfig: TableFieldConfig?) -> String
 }
 
 extension AutomaticMigratable {
     public var removeMigration: String { ".deleteField(\"\(fieldName)\")" }
-    public var addWithoutForeignKeyaddMigration: String? { nil }
 }
 
 struct TableField: AutomaticMigratable {
@@ -27,8 +24,8 @@ struct TableField: AutomaticMigratable {
     let isRequired: Bool
     
     var fieldName: String { name }
-    
-    var addMigration: String {
+        
+    func getAddMigration(fieldConfig: TableFieldConfig?) -> String {
         var migration = ""
         migration += ".field(\"\(name)\", .\(dataType)"
         if isRequired {
