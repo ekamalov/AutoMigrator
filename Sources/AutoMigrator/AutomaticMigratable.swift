@@ -10,6 +10,7 @@ import Fluent
 
 public protocol AutomaticMigratable {
     var addMigration: String { get }
+    var addWithoutForeignKeyaddMigration: String? { get }
     var removeMigration: String { get }
                 
     var fieldName: String { get }
@@ -17,6 +18,7 @@ public protocol AutomaticMigratable {
 
 extension AutomaticMigratable {
     public var removeMigration: String { ".deleteField(\"\(fieldName)\")" }
+    public var addWithoutForeignKeyaddMigration: String? { nil }
 }
 
 struct TableField: AutomaticMigratable {

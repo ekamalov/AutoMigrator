@@ -57,10 +57,16 @@ extension TimestampProperty: AutomaticMigratable {
 
 extension ParentProperty: AutomaticMigratable {
     public var addMigration: String { ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .required, .references(\"\(To.schema)\", .id, onDelete: .cascade, onUpdate: .cascade))" }
+    
+    public var addWithoutForeignKeyaddMigration: String? { ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .required)" }
+    
     public var fieldName: String { $id.key.description }
 }
 
 extension OptionalParentProperty: AutomaticMigratable {
     public var addMigration: String { ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)), .references(\"\(To.schema)\", .id, onDelete: .cascade, onUpdate: .cascade))" }
+    
+    public var addWithoutForeignKeyaddMigration: String? { ".field(\"\(fieldName)\", .\(dataType(from: To.IDValue.self)))" }
+    
     public var fieldName: String { $id.key.description }
 }

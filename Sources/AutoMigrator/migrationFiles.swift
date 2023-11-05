@@ -85,7 +85,7 @@ extension AutoMigrator {
             
             if let old = state[table.name] {
                 // change table
-                let migrations = migration(old: old.map(\.field), new: table.fields)
+                let migrations = migration(old: old.map(\.field), new: table.fields, table: table)
                 app.logger.info("Changes for \(table.name)", metadata: nil)
                 state[table.name] = nil
                 
@@ -101,7 +101,7 @@ extension AutoMigrator {
                 )
             } else {
                 // Add table
-                let migrations = migration(old: [], new: table.fields)
+                let migrations = migration(old: [], new: table.fields, table: table)
                 app.logger.info("Add \(table.name)", metadata: nil)
                 
                 migrationFiles[migrationName] = migrationFile(
